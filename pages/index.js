@@ -1,14 +1,15 @@
 import Head from 'next/head'
 import useSWR from 'swr'
+import { withPageAuthRequired } from '@auth0/nextjs-auth0'
 
 import styles from '../styles/Home.module.css'
 import Nav from '../components/nav.js'
 import { fetcher } from '../util/fetcher.js'
 
-function WishLists() {
-  const { data, error } = useSWR('/api/wishlists', fetcher)
+function WishLists({ user }) {
+  const { data, error: apiError } = useSWR('/api/wishlists', fetcher)
 
-  if (error) return <div>failed to load</div>
+  if (apiError) return <div>failed to load</div>
   if (!data) return <div>loading...</div>
 
   return (
@@ -57,4 +58,4 @@ function WishLists() {
   )
 }
 
-export default WishLists
+export default withPageAuthRequired(WishLists)

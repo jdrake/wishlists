@@ -12,7 +12,6 @@ export default (req, res) => {
       )
     )
     .then((result) => {
-      console.log(result)
       res.status(200).json({ wishlists: result.data })
     })
 }
