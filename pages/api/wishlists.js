@@ -1,7 +1,7 @@
 import faunadb from 'faunadb'
 
 const q = faunadb.query
-const client = new faunadb.Client({ secret: 'fnAEHrK266ACCofNXpb1TaZFEvjZ64qpVFsosaGC' })
+const client = new faunadb.Client({ secret: process.env.FAUNADB_SECRET })
 
 export default (req, res) => {
   return client
