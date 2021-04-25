@@ -1,14 +1,21 @@
 import classnames from 'classnames'
+import Image from 'next/image'
 import Link from 'next/link'
+import { useUser } from '@auth0/nextjs-auth0'
+
 import styles from '../styles/nav.module.css'
 
 function Nav() {
+  const { user, error, isLoading } = useUser()
+  console.log(user)
   return (
     <nav className="navbar" role="navigation" aria-label="main navigation">
       <div className="navbar-brand">
-        <a className="navbar-item" href="https://bulma.io">
-          <img src="https://bulma.io/images/bulma-logo.png" width="112" height="28" />
-        </a>
+        <Link href="/">
+          <a className="navbar-item">
+            <Image src="/logo.svg" width="28" height="28" alt="Wishlists" />
+          </a>
+        </Link>
         <a
           role="button"
           className="navbar-burger"
