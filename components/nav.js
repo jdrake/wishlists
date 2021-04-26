@@ -8,8 +8,13 @@ import styles from '../styles/nav.module.css'
 function Nav() {
   const { user, error, isLoading } = useUser()
   console.log(user)
+  // user.picture = null
   return (
-    <nav className="navbar" role="navigation" aria-label="main navigation">
+    <nav
+      className={classnames(['navbar', styles.navbar])}
+      role="navigation"
+      aria-label="main navigation"
+    >
       <div className="navbar-brand">
         <Link href="/">
           <a className="navbar-item">
@@ -35,16 +40,33 @@ function Nav() {
           </Link>
         </div>
 
-        <div className="navbar-end">
-          <div className="navbar-item">
-            <div className="buttons">
-              <a className="button is-primary">
-                <strong>Sign up</strong>
+        {user && (
+          <div className="navbar-end">
+            <div className="navbar-item has-dropdown is-hoverable">
+              <a className="navbar-link">
+                <figure
+                  className={classnames(['image', 'is-28x28', styles.userPicture])}
+                >
+                  {user.picture ? (
+                    <img className="is-rounded" src={user.picture} />
+                  ) : (
+                    <Image className="is-rounded" src="/face.svg" layout="fill" />
+                  )}
+                </figure>
               </a>
-              <a className="button is-light">Log in</a>
+
+              <div className="navbar-dropdown is-right">
+                <div className="navbar-item">
+                  <strong>{user.name}</strong>
+                </div>
+                <hr className="navbar-divider" />
+                <Link href="/api/auth/logout">
+                  <a className="navbar-item">Log out</a>
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </nav>
   )

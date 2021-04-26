@@ -1,7 +1,4 @@
-import faunadb from 'faunadb'
-
-const q = faunadb.query
-const client = new faunadb.Client({ secret: process.env.FAUNADB_SECRET })
+import { client, q } from '../../../util/db.js'
 
 export default (req, res) => {
   return client
@@ -12,6 +9,9 @@ export default (req, res) => {
       )
     )
     .then((result) => {
+      result.data.forEach((wishlist) => {
+        wishlist.id = wishlist.ref.id
+      })
       res.status(200).json({ wishlists: result.data })
     })
 }
