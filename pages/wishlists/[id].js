@@ -8,17 +8,57 @@ import { withPageAuthRequired } from '@auth0/nextjs-auth0'
 import { useUser } from '@auth0/nextjs-auth0'
 import 'react-quill/dist/quill.snow.css'
 import _ from 'lodash'
+import parseHtml from 'html-react-parser'
 
 import Nav from '../../components/nav.js'
 import { fetcher } from '../../util/fetcher.js'
 import styles from './wishlist.module.css'
+import { random } from '../../util/id.js'
 
 const Quill = dynamic(import('react-quill'), {
   ssr: false,
   // loading: () => <Spin />,
 })
 
-function WishlistItem({ item }) {
+function WishlistItem({ wishlist, item, editable }) {
+  const [isReserving, setReserving] = useState(false)
+  const [isDeleting, setDeleting] = useState(false)
+
+  function onReserve() {
+    setReserving(true)
+    mutate(`/api/wishlists/${wishlist.id}`, async () => {
+      await fetch(`/api/wishlists/${wishlist.id}/items/${item.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ reserved: true }),
+      })
+      setReserving(false)
+      return {
+        ...wishlist,
+        list: { ...wishlist.list.items, [item.id]: { ...item, reserved: true } },
+      }
+    })
+  }
+
+  function onDelete() {
+    setDeleting(true)
+    mutate(`/api/wishlists/${wishlist.id}`, async () => {
+      await fetch(`/api/wishlists/${wishlist.id}/items/${item.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      setDeleting(false)
+      return {
+        ...wishlist,
+        list: { items: _.reject(wishlist.list.items, { id: item.id }) },
+      }
+    })
+  }
+
   return (
     <div className="box">
       <article className="media">
@@ -33,23 +73,40 @@ function WishlistItem({ item }) {
         </div>
         <div className="media-content">
           <div className="content">
-            <p>
+            <div className="block">
               <strong>{item.title}</strong>
               <br />
-              {item.description}
-            </p>
+              <span>{parseHtml(item.description)}</span>
+            </div>
           </div>
         </div>
         <div className="media-right">
-          <button
-            className={classnames({
-              button: true,
-              'is-primary': !item.reserved,
-            })}
-            disabled={item.reserved}
-          >
-            {item.reserved ? 'Reserved 🎁' : 'Reserve'}
-          </button>
+          <div className="field is-grouped">
+            <p className="control">
+              <button
+                onClick={() => onReserve()}
+                className={classnames('button', {
+                  'is-primary': !item.reserved,
+                  'is-loading': isReserving,
+                })}
+                disabled={item.reserved}
+              >
+                {item.reserved ? 'Reserved 🎁' : 'Reserve'}
+              </button>
+            </p>
+            {editable && (
+              <p className="control">
+                <button
+                  onClick={() => onDelete()}
+                  className={classnames('button is-danger is-light', {
+                    'is-loading': isDeleting,
+                  })}
+                >
+                  Delete
+                </button>
+              </p>
+            )}
+          </div>
         </div>
       </article>
     </div>
@@ -64,12 +121,20 @@ function NewItemModal({ wishlist, isOpen, toggleModal }) {
   function onSubmit() {
     setSaving(true)
     mutate(`/api/wishlists/${wishlist.id}`, async () => {
-      const newItem = { id: _.uniqueId('item'), title, description }
+      const newItem = { id: random(), title, description }
       await fetch(`/api/wishlists/${wishlist.id}/items`, {
         method: 'POST',
-        body: JSON.stringify({ wishlist, newItem }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newItem),
       })
-      return { ...wishlist, list: { items: { ...wishlist.list.items, newItem } } }
+      setSaving(false)
+      toggleModal(false)
+      return {
+        ...wishlist,
+        list: { items: { ...wishlist.list.items, [newItem.id]: newItem } },
+      }
     })
   }
 
@@ -121,7 +186,10 @@ function NewItemModal({ wishlist, isOpen, toggleModal }) {
             <div className="control">
               <button
                 className="button is-link is-light"
-                onClick={() => toggleModal(false)}
+                onClick={() => {
+                  setSaving(false)
+                  toggleModal(false)
+                }}
               >
                 Cancel
               </button>
@@ -146,7 +214,8 @@ function Wishlist() {
 
   if (apiError) return <div>failed to load</div>
   if (!wishlist) return <div>loading...</div>
-  console.log(wishlist)
+
+  const editable = wishlist.createdBy.sub === user.sub
 
   return (
     <>
@@ -170,10 +239,17 @@ function Wishlist() {
               <div className="block">{wishlist.description}</div>
               <div className="wishlist-items block">
                 {Object.values(wishlist.list.items).map(function renderItem(item, i) {
-                  return <WishlistItem item={item} key={i} />
+                  return (
+                    <WishlistItem
+                      wishlist={wishlist}
+                      item={item}
+                      editable={editable}
+                      key={i}
+                    />
+                  )
                 })}
               </div>
-              {wishlist.createdBy.sub === user.sub ? (
+              {editable ? (
                 <>
                   <div className="block center">
                     <button

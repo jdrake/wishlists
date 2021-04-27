@@ -1,16 +1,17 @@
 import _ from 'lodash'
-import { client, q } from '../../../../util/db.js'
+import { client, q } from '../../../../../util/db.js'
 
 export default (req, res) => {
-  const { wishlist, newItem } = req.query
-  const items = {}
-  items[_.uniqueId('item')] = newItem
+  const { wishlistId } = req.query
+  const newItem = req.body
   return client
     .query(
-      q.Update(q.Ref(q.Collection('wishlists'), wishlist.id), {
+      q.Update(q.Ref(q.Collection('wishlists'), wishlistId), {
         data: {
           list: {
-            items,
+            items: {
+              [newItem.id]: newItem,
+            },
           },
         },
       })
