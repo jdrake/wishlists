@@ -37,7 +37,10 @@ function WishlistItem({ wishlist, item, editable }) {
       setReserving(false)
       return {
         ...wishlist,
-        list: { ...wishlist.list.items, [item.id]: { ...item, reserved: true } },
+        list: {
+          ...wishlist.list,
+          items: { ...wishlist.list.items, [item.id]: { ...item, reserved: true } },
+        },
       }
     })
   }
