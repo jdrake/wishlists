@@ -57,7 +57,7 @@ function WishLists({ user }) {
                             className="is-rounded"
                           />
                         </figure>
-                        <span className="has-text-grey-light">and 12 wish granters</span>
+                        {/* <span className="has-text-grey-light">and 12 wish granters</span> */}
                       </div>
                     </div>
                   </div>
