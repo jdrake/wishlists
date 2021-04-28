@@ -21,26 +21,49 @@ const Quill = dynamic(import('react-quill'), {
   // loading: () => <Spin />,
 })
 
-function WishlistItem({ wishlist, item, editable }) {
+function WishlistItem({ wishlist, item, user, editable }) {
   const [isReserving, setReserving] = useState(false)
   const [isDeleting, setDeleting] = useState(false)
 
   function onReserve() {
     setReserving(true)
     mutate(`/api/wishlists/${wishlist.id}`, async () => {
+      const updates = { reserved: true, reservedBy: user }
       await fetch(`/api/wishlists/${wishlist.id}/items/${item.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ reserved: true }),
+        body: JSON.stringify(updates),
       })
       setReserving(false)
       return {
         ...wishlist,
         list: {
           ...wishlist.list,
-          items: { ...wishlist.list.items, [item.id]: { ...item, reserved: true } },
+          items: { ...wishlist.list.items, [item.id]: { ...item, ...updates } },
+        },
+      }
+    })
+  }
+
+  function onUnreserve() {
+    setReserving(true)
+    mutate(`/api/wishlists/${wishlist.id}`, async () => {
+      const updates = { reserved: false, reservedBy: null }
+      await fetch(`/api/wishlists/${wishlist.id}/items/${item.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates),
+      })
+      setReserving(false)
+      return {
+        ...wishlist,
+        list: {
+          ...wishlist.list,
+          items: { ...wishlist.list.items, [item.id]: { ...item, ...updates } },
         },
       }
     })
@@ -62,6 +85,8 @@ function WishlistItem({ wishlist, item, editable }) {
       }
     })
   }
+
+  const canUnreserve = item.reserved && user.sub === item.reservedBy.sub
 
   return (
     <div className="box">
@@ -88,12 +113,12 @@ function WishlistItem({ wishlist, item, editable }) {
           <div className="field is-grouped">
             <p className="control">
               <button
-                onClick={() => onReserve()}
+                onClick={() => (item.reserved ? onUnreserve() : onReserve())}
                 className={classnames('button', {
                   'is-primary': !item.reserved,
                   'is-loading': isReserving,
                 })}
-                disabled={item.reserved}
+                disabled={item.reserved && !canUnreserve}
               >
                 {item.reserved ? 'Reserved 🎁' : 'Reserve'}
               </button>
@@ -257,6 +282,7 @@ function Wishlist() {
                     <WishlistItem
                       wishlist={wishlist}
                       item={item}
+                      user={user}
                       editable={editable}
                       key={i}
                     />

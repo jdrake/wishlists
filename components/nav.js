@@ -7,8 +7,6 @@ import styles from '../styles/nav.module.css'
 
 function Nav() {
   const { user, error, isLoading } = useUser()
-  console.log(user)
-  // user.picture = null
   return (
     <nav
       className={classnames(['navbar', styles.navbar])}
