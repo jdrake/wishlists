@@ -2,6 +2,7 @@ import { useState } from 'react'
 import classnames from 'classnames'
 import dynamic from 'next/dynamic'
 import Head from 'next/head'
+import Image from 'next/image'
 import { useRouter } from 'next/router'
 import useSWR, { mutate } from 'swr'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0'
@@ -65,7 +66,7 @@ function WishlistItem({ wishlist, item, editable }) {
   return (
     <div className="box">
       <article className="media">
-        <div className="media-left">
+        {/* <div className="media-left">
           <figure className="image is-64x64">
             <img
               className="is-rounded"
@@ -73,7 +74,7 @@ function WishlistItem({ wishlist, item, editable }) {
               alt="Image"
             />
           </figure>
-        </div>
+        </div> */}
         <div className="media-content">
           <div className="content">
             <div className="block">
@@ -231,12 +232,22 @@ function Wishlist() {
         <div className="container">
           <div className="columns">
             <div className="column is-half is-offset-one-quarter">
-              <h1 className={classnames(['title', 'is-1', styles.title])}>
+              <div className={classnames(['block', styles.imageHeader])}>
+                <figure className={classnames(['image', 'is-128x128'])}>
+                  <Image
+                    src={wishlist.image.src}
+                    alt={wishlist.name}
+                    layout="fill"
+                    className="is-rounded"
+                  />
+                </figure>
+              </div>
+              <h1 className={classnames(['title', 'is-1', styles.center])}>
                 {wishlist.name}
               </h1>
               <div className="block">
-                <h3 className={classnames(['title', 'is-6', styles.title])}>
-                  Created with ❤️ by {wishlist.createdBy.name}
+                <h3 className={classnames(['title', 'is-6', styles.center])}>
+                  Created with ❤️ &nbsp;by {wishlist.createdBy.name}
                 </h3>
               </div>
               <div className="block">{wishlist.description}</div>

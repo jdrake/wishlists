@@ -1,3 +1,10 @@
 .wishlistCard {
   cursor: pointer;
 }
+.participants {
+  display: flex;
+  flex-direction: row;
+}
+.participants figure {
+  margin-right: 12px;
+}

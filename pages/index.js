@@ -1,7 +1,9 @@
 import Head from 'next/head'
+import Image from 'next/image'
 import Link from 'next/link'
 import useSWR from 'swr'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0'
+import classnames from 'classnames'
 
 import styles from './wishlists.module.css'
 import Nav from '../components/nav.js'
@@ -32,9 +34,11 @@ function WishLists({ user }) {
                       <div className="media">
                         <div className="media-left">
                           <figure className="image is-48x48">
-                            <img
-                              src="https://bulma.io/images/placeholders/96x96.png"
-                              alt="Placeholder image"
+                            <Image
+                              src={wishlist.data.image.src}
+                              alt={wishlist.data.name}
+                              layout="fill"
+                              className="is-rounded"
                             />
                           </figure>
                         </div>
@@ -42,10 +46,19 @@ function WishLists({ user }) {
                           <p className="title is-4">{wishlist.data.name}</p>
                         </div>
                       </div>
-
-                      <div className="content">
+                      <div className="block">
                         <p>{wishlist.data.description}</p>
-                        <p>Created by: {wishlist.data.createdBy.name}</p>
+                      </div>
+                      <div className={classnames(['block', styles.participants])}>
+                        <figure className={classnames(['image', 'is-24x24'])}>
+                          <Image
+                            src={wishlist.data.createdBy.picture}
+                            alt={wishlist.data.createdBy.name}
+                            layout="fill"
+                            className="is-rounded"
+                          />
+                        </figure>
+                        <span className="has-text-grey-light">and 12 wish granters</span>
                       </div>
                     </div>
                   </div>
