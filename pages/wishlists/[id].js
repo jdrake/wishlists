@@ -111,18 +111,20 @@ function WishlistItem({ wishlist, item, user, editable }) {
         </div>
         <div className="media-right">
           <div className="field is-grouped">
-            <p className="control">
-              <button
-                onClick={() => (item.reserved ? onUnreserve() : onReserve())}
-                className={classnames('button', {
-                  'is-primary': !item.reserved,
-                  'is-loading': isReserving,
-                })}
-                disabled={item.reserved && !canUnreserve}
-              >
-                {item.reserved ? 'Reserved 🎁' : 'Reserve'}
-              </button>
-            </p>
+            {item.reserveable !== false && (
+              <p className="control">
+                <button
+                  onClick={() => (item.reserved ? onUnreserve() : onReserve())}
+                  className={classnames('button', {
+                    'is-primary': !item.reserved,
+                    'is-loading': isReserving,
+                  })}
+                  disabled={item.reserved && !canUnreserve}
+                >
+                  {item.reserved ? 'Reserved 🎁' : 'Reserve'}
+                </button>
+              </p>
+            )}
             {editable && (
               <p className="control">
                 <button
@@ -145,12 +147,13 @@ function WishlistItem({ wishlist, item, user, editable }) {
 function NewItemModal({ wishlist, isOpen, toggleModal }) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [reserveable, setReserveable] = useState(true)
   const [isSaving, setSaving] = useState(false)
 
   function onSubmit() {
     setSaving(true)
     mutate(`/api/wishlists/${wishlist.id}`, async () => {
-      const newItem = { id: random(), title, description }
+      const newItem = { id: random(), title, description, reserveable }
       await fetch(`/api/wishlists/${wishlist.id}/items`, {
         method: 'POST',
         headers: {
@@ -196,6 +199,17 @@ function NewItemModal({ wishlist, isOpen, toggleModal }) {
             <div className="control">
               <Quill theme="snow" value={description} onChange={setDescription} />
             </div>
+          </div>
+
+          <div className="field">
+            <label className="checkbox">
+              <input
+                type="checkbox"
+                checked={reserveable}
+                onChange={(event) => setReserveable(event.target.checked)}
+              />
+              &nbsp; Reserveable
+            </label>
           </div>
 
           <div className="field is-grouped">
